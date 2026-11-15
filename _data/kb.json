@@ -1,0 +1,12 @@
+{
+  "name": "my-notes-template",
+  "subject": "〇〇",
+  "owner_org": "〇〇の提供元",
+  "support_name": "〇〇公式サポート",
+  "support_url": "https://example.com/",
+  "description": "非公式の知識ベース(notes)を作るためのテンプレート",
+  "github": "haya256/my-notes-template",
+  "author": "haya256",
+  "template_repo": "haya256/my-notes-template",
+  "is_template": true
+}
