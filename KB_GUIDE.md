@@ -96,24 +96,72 @@ my-notes-template(テンプレート = 原本)
 
 ## 5. 新しい notes の作り方
 
-1. テンプレートから新しいリポジトリを作る
-   ```bash
-   gh repo create my-slack-notes --template haya256/my-notes-template --public --clone
-   cd my-slack-notes
-   ```
-2. notes として始める
-   ```bash
-   python3 notes.py init \
-     --name my-slack-notes \
-     --subject Slack \
-     --owner-org "Slack Technologies" \
-     --support-url https://slack.com/help \
-     --github haya256/my-slack-notes
-   ```
-   `_data/kb.json`(`is_template: false`)、README・`index.md`・`CLAUDE.md` が作られ、見本の記事が消え、共通の部分の今の中身が記録されます
-3. README と `index.md` の紹介文を題材に合わせて直す(決まった部分の外側)
-4. `python3 notes.py new SLUG タイトル 説明` で記事を書く → `python3 notes.py check`
-5. コミット・push して、GitHub Pages を有効にする(「8. サイト」)
+作り方は2つあります。**まず手元だけで作り、あとで GitHub に公開する**(5-1)か、**最初から GitHub にリポジトリを作る**(5-2)かです。どちらも、作ったあとの手順(5-3)は同じです。
+
+> **AI への指示**:新しい notes を頼まれたら、題材の名前・リポジトリ名・提供元・公式サポートの URL をユーザーに確認してください。GitHub にリポジトリを作る・公開するのは、ユーザーの了解を得てからにしてください。
+
+### 5-1. 手元だけで作る(GitHub はあとで)
+
+```bash
+# 1. テンプレートの最新版を手元に取ってくる
+cd ~/dev
+git clone --depth 1 https://github.com/haya256/my-notes-template.git my-slack-notes
+cd my-slack-notes
+
+# 2. テンプレートの履歴を切りはなして、新しいリポジトリにする
+c=$(git rev-parse HEAD)   # 元にしたテンプレートの版を控えておく
+rm -rf .git
+git init -b main
+
+# 3. notes として始める
+python3 notes.py init \
+  --name my-slack-notes \
+  --subject Slack \
+  --owner-org "Slack Technologies" \
+  --support-url https://slack.com/help \
+  --github haya256/my-slack-notes \
+  --template-commit "$c"
+
+# 4. 確認して、最初のコミット
+python3 notes.py check
+git add -A
+git commit -m "my-notes-template から notes を作る"
+```
+
+- **手順2の `.git` の削除は必ず行う**。消さないと、テンプレートの履歴と push 先(テンプレートのリポジトリ)が残り、うっかり push するとテンプレートを書きかえてしまう
+- `--github` には、まだ GitHub に作っていないリポジトリ名を書いてよい(サイトの URL や README のリンクを作るのに使うだけ)。あとで変えるときは `_data/kb.json` の `github` を直して `python3 notes.py sync`
+- `--template-commit` で元にした版を記録しておくと、`status` に表示される(省略してもよい。次に `update` したときに記録される)
+- 手元に `~/dev/my-notes-template` があるなら、`git clone` の代わりにそこからコピーしてもよい。その場合も `.git` は消す。テンプレートの手元のコピーに未コミットの変更がないか、先に確かめる
+
+あとで GitHub に公開するとき:
+
+```bash
+gh repo create my-slack-notes --public --source=. --push
+gh api -X POST repos/haya256/my-slack-notes/pages -f "source[branch]=main" -f "source[path]=/"
+```
+
+### 5-2. 最初から GitHub にリポジトリを作る
+
+```bash
+gh repo create my-slack-notes --template haya256/my-notes-template --public --clone
+cd my-slack-notes
+python3 notes.py init \
+  --name my-slack-notes \
+  --subject Slack \
+  --owner-org "Slack Technologies" \
+  --support-url https://slack.com/help \
+  --github haya256/my-slack-notes
+```
+
+テンプレートリポジトリから作ると、履歴は最初から切りはなされている(`.git` を消す必要はない)。
+
+### 5-3. 作ったあと(どちらの作り方でも)
+
+`init` で、`_data/kb.json`(`is_template: false`)、README・`index.md`・`CLAUDE.md` が作られ、見本の記事が消え、共通の部分の今の中身が記録されます。
+
+1. README と `index.md` の紹介文を題材に合わせて直す(決まった部分の外側)
+2. `python3 notes.py new SLUG タイトル 説明` で記事を書く → `python3 notes.py check`
+3. コミットする。GitHub に公開したら、GitHub Pages を有効にする(「10. サイト」)
 
 ---
 

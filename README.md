@@ -22,7 +22,7 @@ python3 notes.py init \
   --github haya256/my-slack-notes
 ```
 
-続きは [KB_GUIDE.md](KB_GUIDE.md) の「5. 新しい notes の作り方」を見てください。
+GitHub に作らず、**まず手元だけで作る**こともできます。手元で作る手順と、作ったあとの続きは [KB_GUIDE.md](KB_GUIDE.md) の「5. 新しい notes の作り方」を見てください。
 
 ## テンプレートの改善を notes に取りこむ
 
