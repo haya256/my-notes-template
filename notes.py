@@ -313,7 +313,7 @@ def replace_block(text, start, end, body):
 
 
 def generated(conf):
-    """自動で作る部分。{パス: (今あるべき全文 or None, 問題の説明 or None)} を返す。"""
+    """自動で作る部分。{パス: (今あるべき全文 or None, 問題の説明のリスト)} を返す。"""
     result = {}
     blocks = {
         README: [(AI_START, AI_END, build_ai_block(conf)),
@@ -323,20 +323,20 @@ def generated(conf):
     }
     for path, items in blocks.items():
         if not path.exists():
-            result[path] = (None, "ファイルがない")
+            result[path] = (None, ["ファイルがない"])
             continue
         text = path.read_text(encoding="utf-8")
-        problem = None
+        problems = []
         for start, end, body in items:
             updated = replace_block(text, start, end, body)
             if updated is None:
                 # テンプレート自身の README には、決まった部分を置かなくてよい
                 if not (conf["is_template"] and path == README):
-                    problem = f"マーカー({start} / {end})がない"
+                    problems.append(f"マーカー({start} / {end})がない")
                 continue
             text = updated
-        result[path] = (text, problem)
-    result[SITE_CONFIG] = (build_site_config(conf), None)
+        result[path] = (text, problems)
+    result[SITE_CONFIG] = (build_site_config(conf), [])
     return result
 
 
@@ -511,9 +511,9 @@ def cmd_check(args):
                 errors.append(f"{name}: checked は YYYY-MM-DD 形式にする(今は「{checked}」)")
 
     # 自動で作る部分
-    for path, (expected, problem) in generated(conf).items():
-        if problem:
-            errors.append(f"{rel(path)}: {problem}")
+    for path, (expected, problems) in generated(conf).items():
+        if problems:
+            errors += [f"{rel(path)}: {problem}" for problem in problems]
         elif not path.exists() or path.read_text(encoding="utf-8") != expected:
             errors.append(f"{rel(path)}: 自動で作る部分が最新でない、または手で直されている → python3 notes.py sync で直せる")
 
@@ -544,9 +544,10 @@ def cmd_check(args):
 def cmd_sync(args):
     conf = kb()
     status = 0
-    for path, (expected, problem) in generated(conf).items():
-        if problem:
-            print(f"エラー: {rel(path)}: {problem}")
+    for path, (expected, problems) in generated(conf).items():
+        if problems:
+            for problem in problems:
+                print(f"エラー: {rel(path)}: {problem}")
             status = 1
             continue
         current = path.read_text(encoding="utf-8") if path.exists() else None
