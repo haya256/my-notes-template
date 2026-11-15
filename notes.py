@@ -666,6 +666,8 @@ AIチャットに次のように頼みます。
 
 
 def initial_index(conf):
+    # 注意書きの提供元・公式サポートは {{ site.data.kb.… }} で _data/kb.json から読む。
+    # _data/kb.json を直せば、サイトのビルドのときに反映される(index.md を直さなくてよい)
     s = conf["subject"]
     return f"""---
 title: ホーム
@@ -680,11 +682,11 @@ permalink: /
 {s}本体の機能のほか、{s}と一緒によく使う外部サービスも扱います。
 
 {{: .warning }}
-これは個人が作成した**非公式**のメモです。{conf['owner_org']} とは関係ありません。
-{s}の仕様はよく変わります。各記事の「確認日」と「実機で確認したか」を見て、正確な情報は [{conf['support_name']}]({conf['support_url']}) で確認してください。
+これは個人が作成した**非公式**のメモです。{{{{ site.data.kb.owner_org }}}} とは関係ありません。
+{{{{ site.data.kb.subject }}}}の仕様はよく変わります。各記事の「確認日」と「実機で確認したか」を見て、正確な情報は [{{{{ site.data.kb.support_name }}}}]({{{{ site.data.kb.support_url }}}}) で確認してください。
 
 {{: .note }}
-外部サービスは**{s}の公式機能ではありません**。紹介するだけで、推奨や保証はしません。
+外部サービスは**{{{{ site.data.kb.subject }}}}の公式機能ではありません**。紹介するだけで、推奨や保証はしません。
 
 ## 記事一覧
 

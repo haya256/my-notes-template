@@ -243,6 +243,11 @@ python3 notes.py init \
 
 直したら `python3 notes.py sync`(`_config.yml` などに反映される)。
 
+`_data/kb.json` の値は、次の所で使われます。
+- `notes.py sync` が作る部分(`_config.yml`、README の「AIへの指示」など)→ `sync` で反映
+- サイトのフッターと、`init` が作る `index.md` の注意書き(`{{ site.data.kb.… }}` で読む)→ サイトのビルドのときに自動で反映
+- `init` が作る README の紹介文 → 作ったときに文字として書きこまれるので、**値を変えたら手で直す**
+
 ---
 
 ## 10. サイト(GitHub Pages)
