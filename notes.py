@@ -149,6 +149,86 @@ def yaml_unsafe_values(text):
     return [v for v in values if v and v[0] in YAML_RESERVED_START]
 
 
+def quoted_end(raw, i):
+    """raw[i] の引用符で始まる文字列の、閉じる引用符の次の位置を返す。閉じていなければ None。"""
+    q = raw[i]
+    j = i + 1
+    while j < len(raw):
+        if q == '"' and raw[j] == "\\":
+            j += 2
+            continue
+        if raw[j] == q:
+            if q == "'" and raw[j + 1:j + 2] == "'":  # '' は ' そのもの
+                j += 2
+                continue
+            return j + 1
+        j += 1
+    return None
+
+
+def unclosed_problem(raw):
+    """値の書き方の崩れ(括弧や引用符の閉じ忘れ)を一言で返す。問題がなければ None。
+
+    値が [ { " ' で始まるときだけ見る。途中の ' や " は(it's など)ふつうの文字なので見ない。
+    """
+    if not raw or raw[0] not in "[{\"'":
+        return None
+    if raw[0] in "\"'":
+        end = quoted_end(raw, 0)
+        if end is None:
+            return f"引用符 {raw[0]} が閉じていない"
+        rest = raw[end:].strip()
+        if rest and not rest.startswith("#"):
+            return f"閉じた引用符 {raw[0]} のあとに「{rest}」が続いている"
+        return None
+    pairs = {"[": "]", "{": "}"}
+    stack = []
+    at_start = True  # 要素の書き始め(引用符を開く位置)かどうか
+    i = 0
+    while i < len(raw):
+        c = raw[i]
+        if c in "\"'" and at_start:
+            end = quoted_end(raw, i)
+            if end is None:
+                return f"引用符 {c} が閉じていない"
+            i, at_start = end, False
+            continue
+        if c in pairs:
+            stack.append(pairs[c])
+            at_start = True
+        elif c in "]}":
+            if not stack or stack.pop() != c:
+                return f"閉じる {c} に対応する開く括弧がない"
+            at_start = False
+            if not stack:
+                rest = raw[i + 1:].strip()
+                if rest and not rest.startswith("#"):
+                    return f"閉じた {c} のあとに「{rest}」が続いている"
+                return None
+        elif c in ",:":
+            at_start = True
+        elif not c.isspace():
+            at_start = False
+        i += 1
+    return f"{raw[0]} を閉じる {pairs[raw[0]]} がない"
+
+
+def yaml_syntax_problems(text):
+    """frontmatter の各行で、括弧や引用符の閉じ忘れを (行の中身, 問題) の組で返す。"""
+    m = FRONTMATTER_RE.match(text)
+    if not m:
+        return []
+    problems = []
+    for line in m.group(1).splitlines():
+        item = re.match(r"^\s+-\s*(.*)$", line)
+        kv = re.match(r"^[A-Za-z_]+:\s*(.*)$", line)
+        raw = (item.group(1) if item else kv.group(1) if kv else "").strip()
+        problem = unclosed_problem(raw)
+        if problem:
+            problems.append((line.strip(), problem))
+    return problems
+
+
 def articles():
     """docs/ の記事(_ で始まるファイルを除く)を番号順に返す。"""
     return sorted(p for p in DOCS.glob("*.md") if not p.name.startswith("_"))
@@ -475,6 +555,9 @@ def cmd_check(args):
             expected = str(int(path.name[:2]))
             if fm.get("nav_order") != expected:
                 errors.append(f"{name}: nav_order はファイル名の番号と同じ {expected} にする(サイトのメニューの並び順)")
+
+        for line, problem in yaml_syntax_problems(text):
+            errors.append(f"{name}: frontmatter の「{line}」で、{problem}。YAML として読めず、サイトのビルドが失敗したりおかしな値になったりする")
 
         for v in yaml_unsafe_values(text):
             errors.append(f"{name}: 「{v}」は記号で始まるので引用符で囲む(例: \"{v}\")。囲まないとサイトのビルドが失敗する")

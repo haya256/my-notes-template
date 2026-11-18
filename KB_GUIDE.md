@@ -219,6 +219,7 @@ python3 notes.py init \
 ### ルール
 
 - 値が `@` などの記号で始まるときは `"@everyone"` のように引用符で囲む(囲まないとサイトのビルドが失敗する。`check` が検査する)
+- `[` で始めたら `]` で、引用符で始めたら同じ引用符で閉じる(閉じ忘れは `check` が検査する)
 - `thirdparty` が空でない記事は、タイトル(`# ...`)の直後に `>` で始まる注意書きを置く。注意書きには「(題材)の公式機能ではありません」という文言(`_data/kb.json` の `subject` から作る)と、`thirdparty` のサービス名をすべて含める
 - ほかの記事への参照は `[05-developer-mode.md](05-developer-mode.md)` のようにリンクで書く(GitHub でもサイトでもリンクになる)
 - 目次や決まった部分は手で直さない。記事の `summary` などを直して `python3 notes.py sync`
@@ -269,6 +270,7 @@ python3 notes.py init \
 ### 過去にハマったこと
 
 - frontmatter の値が `@` で始まると YAML のエラーでビルドが失敗する → 引用符で囲む(`check` が検査)
+- frontmatter の `keywords: [a, b` のように `]` や引用符を閉じ忘れても気づきにくい(YAML としては読めず、ビルドの失敗やおかしな値のもと) → `check` が `[` `{` `"` `'` の閉じ忘れを検査
 - HTML コメント(`<!-- toc:start -->`)の直後に表を書くと、表が崩れる → `sync` は空行を入れて作る
 - テーマの検索(lunr)は日本語を消してしまう → `_includes/lunr/custom-index.js` で対応済み
 
