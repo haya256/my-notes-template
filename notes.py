@@ -335,8 +335,7 @@ def build_ask_block(conf, for_readme=False):
     q = conf.get("ask_example") or "(聞きたいこと)"
     simple = f"""ウェブのページを読める AI チャットに、{'サイト' if for_readme else 'このサイト'}の URL と質問を渡すだけで、記事をもとに答えてもらえます。
 
-> 次のページをもとに教えて。{q}
->
+> 次のページをもとに教えて。{q}  
 > {url}
 
 - リンクを貼ったときに出るページ名だけでは、AI には伝わりません。**URL(https:// で始まる文字)を必ず書きます**
@@ -357,17 +356,31 @@ def build_ask_block(conf, for_readme=False):
 - サイトに書いていないことは、無理に答えず「このサイトには記載がない」と伝える
 - 日本語で答える"""
 
+    _, repo = github_parts(conf)
+    # notes の CLAUDE.md(init が作る)に「README の『AIへの指示』に従う」とあるので、フォルダで起動して質問するだけでよい
     detail = f"""
 
-### もっとくわしく調べたいとき
+### もっとくわしく調べたいとき(Claude Code)
 
-Claude Code など、リポジトリを読める道具を使うなら、次のように頼むと、すべての記事を検索して答えてもらえます{'(AI は下の「AIへの指示」に従います)' if for_readme else ''}。
+Claude Code を使うと、AI がすべての記事を検索して答えます。
 
-> このリポジトリをクローンして、README の「AIへの指示」に従って答えてください。
->
-> https://github.com/{conf['github']}
->
-> 質問:{q}"""
+**1. 最初に1回だけ:リポジトリをクローンする**
+
+```
+git clone https://github.com/{conf['github']}.git
+```
+
+**2. 質問するとき:フォルダに入って Claude Code を起動し、質問する**
+
+```
+cd {repo}
+claude
+```
+
+> {q}
+
+- リポジトリの `CLAUDE.md` が読まれるので、「お願い」の文を書かなくても、README の「AIへの指示」に従って答えます
+- 記事は増えたり直ったりします。ときどき `git pull` で最新にしてください"""
 
     return simple + ("" if for_readme else rules) + detail
 
