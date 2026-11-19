@@ -334,9 +334,10 @@ def build_ask_block(conf, for_readme=False):
     simple = f"""ウェブのページを読める AI チャットに、{'サイト' if for_readme else 'このサイト'}の URL と質問を渡すだけで、記事をもとに答えてもらえます。
 
 > 次のページをもとに教えて。(聞きたいこと)
+>
 > {url}
 
-- ページ名(「ホーム | {conf['name']}」など)だけを貼っても、AI には伝わりません。**URL を必ず書きます**
+- リンクを貼ったときに出るページ名だけでは、AI には伝わりません。**URL(https:// で始まる文字)を必ず書きます**
 - AI が記事を読みちがえることもあります。大事なことは、答えに出てきた記事を開いて確かめてください"""
 
     rules = f"""
@@ -361,7 +362,9 @@ def build_ask_block(conf, for_readme=False):
 Claude Code など、リポジトリを読める道具を使うなら、次のように頼むと、すべての記事を検索して答えてもらえます{'(AI は下の「AIへの指示」に従います)' if for_readme else ''}。
 
 > このリポジトリをクローンして、README の「AIへの指示」に従って答えてください。
+>
 > https://github.com/{conf['github']}
+>
 > 質問:(聞きたいこと)"""
 
     return simple + ("" if for_readme else rules) + detail
