@@ -331,9 +331,11 @@ def build_ask_block(conf, for_readme=False):
     """
     s = conf["subject"]
     url = site_url(conf)
+    # 質問の例。_data/kb.json の ask_example(省略できる)があれば、それを使う
+    q = conf.get("ask_example") or "(聞きたいこと)"
     simple = f"""ウェブのページを読める AI チャットに、{'サイト' if for_readme else 'このサイト'}の URL と質問を渡すだけで、記事をもとに答えてもらえます。
 
-> 次のページをもとに教えて。(聞きたいこと)
+> 次のページをもとに教えて。{q}
 >
 > {url}
 
@@ -365,7 +367,7 @@ Claude Code など、リポジトリを読める道具を使うなら、次の�
 >
 > https://github.com/{conf['github']}
 >
-> 質問:(聞きたいこと)"""
+> 質問:{q}"""
 
     return simple + ("" if for_readme else rules) + detail
 
