@@ -41,7 +41,7 @@ my-notes-template(テンプレート = 原本)
 | 分類 | ファイル | 直してよい場所 | 直し方 |
 |---|---|---|---|
 | **共通の部分** | `kb-engine.json` に載っているファイル:`notes.py`、`KB_GUIDE.md`、`kb-engine.json`、`docs/_template.md`、`_layouts/article.html`、`_includes/footer_custom.html`、`_includes/head_custom.html`、`_includes/lunr/custom-index.js` | **テンプレートだけ** | テンプレートで直して push → 各 notes で `update` |
-| **自動で作る部分** | `_config.yml`、README の `<!-- kb:ai -->`・`<!-- toc -->`・`<!-- kb:manage -->` で囲まれた部分、`index.md` の `<!-- toc -->` で囲まれた部分 | どこでも**手で直さない** | `python3 notes.py sync` が作る。中身を変えたいときは、作り方(`notes.py`)をテンプレートで直す |
+| **自動で作る部分** | `_config.yml`、README の `<!-- kb:ask -->`・`<!-- kb:ai -->`・`<!-- toc -->`・`<!-- kb:manage -->` で囲まれた部分、`index.md` の `<!-- toc -->`・`<!-- kb:ask -->` で囲まれた部分 | どこでも**手で直さない** | `python3 notes.py sync` が作る。中身を変えたいときは、作り方(`notes.py`)をテンプレートで直す |
 | **notes ごとの部分** | `_data/kb.json`、記事(`docs/01-…md` など)、README・`index.md` の決まった部分の外側、`CLAUDE.md`、`LICENSE`、`.gitignore` | その notes で自由に | ふつうに直す |
 
 ポイント:
@@ -163,6 +163,14 @@ python3 notes.py init \
 2. `python3 notes.py new SLUG タイトル 説明` で記事を書く → `python3 notes.py check`
 3. コミットする。GitHub に公開したら、GitHub Pages を有効にする(「10. サイト」)
 
+### 5-4. 「AIに質問する使い方」について
+
+README の「使い方(人間向け)」と `index.md` の「AIに質問する使い方」の中身は、`sync` が作る決まった部分(`<!-- kb:ask:start -->` 〜 `<!-- kb:ask:end -->`)です。
+
+- いちばん簡単な使い方として、**ウェブのページを読める AI チャットに、サイトの URL と質問を渡す**方法を先に書く。サイトだけを読んだ AI は README の「AIへの指示」を知らないので、`index.md` には短い回答のルールも載せる。リポジトリをクローンする頼み方は「もっとくわしく調べたいとき」として後ろに書く
+- 見出し(`## 使い方(人間向け)`・`## AIに質問する使い方`)は決まった部分の外にある。決まった部分の外なら、題材ごとの質問の例などを自由に書き足してよい
+- 決まった部分がなかったころに作った notes では、`update`(または `sync`)のときに、見出しの下の本文(次の見出しか `---` まで)が決まった部分に置きかわる。そこに手で書いていた質問の例などは消えるので、残したいものは決まった部分の外に書き直す
+
 ---
 
 ## 6. テンプレートを直したときの確かめ方
@@ -245,7 +253,7 @@ python3 notes.py init \
 直したら `python3 notes.py sync`(`_config.yml` などに反映される)。
 
 `_data/kb.json` の値は、次の所で使われます。
-- `notes.py sync` が作る部分(`_config.yml`、README の「AIへの指示」など)→ `sync` で反映
+- `notes.py sync` が作る部分(`_config.yml`、README の「AIへの指示」、README と `index.md` の「AIに質問する使い方」など)→ `sync` で反映
 - サイトのフッターと、`init` が作る `index.md` の注意書き(`{{ site.data.kb.… }}` で読む)→ サイトのビルドのときに自動で反映
 - `init` が作る README の紹介文 → 作ったときに文字として書きこまれるので、**値を変えたら手で直す**
 
@@ -261,7 +269,7 @@ python3 notes.py init \
 | ファイル | 内容 | 分類 |
 |---|---|---|
 | `_config.yml` | サイトの設定。サイトに出さないファイルもここで指定 | 自動で作る部分 |
-| `index.md` | サイトのトップページ | notes ごと(記事一覧は自動) |
+| `index.md` | サイトのトップページ | notes ごと(記事一覧と「AIに質問する使い方」は自動) |
 | `_layouts/article.html` | 記事のページ。確認日・確認方法・外部サービスを本文の上に、`source` を「参考」として本文の下に出す | 共通 |
 | `_includes/footer_custom.html` | 全ページの下の注意書きとライセンス(`_data/kb.json` から作る) | 共通 |
 | `_includes/head_custom.html` | 見た目の細かい調整(CSS) | 共通 |
